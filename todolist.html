@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todolist</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="app" class="container my-3">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">待辦事項</span>
+          </div>
+          <input type="text" class="form-control" placeholder="準備要做的任務" id="newTodo">
+          <div class="input-group-append">
+            <button class="btn btn-primary" type="button" id="addTodo" >新增</button>
+          </div>
+        </div>
+        <div class="card text-center">
+          <ul class="list-group list-group-flush text-left" id="todoList">
+          </ul>
+          <div class="card-footer d-flex justify-content-between">
+            <span>還有 <span id="taskCount">0</span> 筆任務</span>
+            <a href="#" id="clearTask">清除所有任務</a>
+          </div>
+        </div>
+      </div>    
+</body>
+</html>
+<style>
+    .completed {
+        text-decoration: line-through
+    }
+</style>
+<script>
+// 用戶可以新增 Todo，新增後移除 input 的項目 ooo
+// 用戶可以刪除、完成 Todo
+// 用戶可以一鍵刪除所有任務    ooo
+    // 資料準備-----------------
+    var dataList = [];  //準備空陣列來裝要新增的資料
+    var newTodo = document.getElementById('newTodo'); //儲存user input內容
+    var addBtn = document.getElementById('addTodo'); //抓住addTodo的按鈕id
+    var clearAllBtn = document.getElementById('clearTask'); // 抓住clearAll的按鈕id
+    var todoListArea = document.getElementById('todoList'); //要渲染的畫面位置
+    var listNum = document.getElementById('taskCount');
+
+    addBtn.addEventListener('click',addTodoList); //註冊點擊事件到addTodo按鈕上 
+    clearAllBtn.addEventListener('click',clearAll); // 註冊點擊事件到clearAllBtn上
+    todoListArea.addEventListener('click',prepareAction);
+
+    function addTodoList (){  //準備新增事項的函式
+        var newList = newTodo.value;
+        var timeStamp = Math.floor(Date.now()); //參考解答
+        if ( newList !== ''){
+            dataList.push({
+                title: newList,
+                id : timeStamp,
+                completed : false
+            }); //放進dataLisit存放
+        console.log('新增成功' ,dataList);
+        newTodo.value = "" ; //輸入完畢後清空newTodo
+        render (dataList); // 呼叫渲染畫面 
+        }
+    }
+    function clearAll (){  // 準備全部清除函式
+        dataList = [];     //清空dataList
+        render (dataList); // 呼叫渲染畫面 
+        console.log('全部清除', dataList); 
+    }
+    function cleanThisOne (id){ // 準備清除特定項目函式  參考解答
+        var index = 0;     
+        dataList.forEach ( (item , key) =>{
+            if(id == item.id){
+                index = key;
+            }
+        })
+        dataList.splice(index ,1);
+        render(dataList);
+        console.log('清除這一個')
+    }
+    function makeItcomplecate(id){ //準備勾選完成函式 參考解答
+        dataList.forEach( (item) =>{
+            if(id == item.id){
+                item.completed = item.completed? false :true;
+            }
+        })
+        console.log('已完成');
+        render(dataList);
+    }
+    function prepareAction(e){
+        var action = e.target.parentNode.dataset.action;   //參考解答
+        var id = e.target.parentNode.dataset.id;           //參考解答
+        if( action == 'remove'){
+            cleanThisOne(id);
+        }else if( action == 'complete'){
+            makeItcomplecate(id);
+        }
+    }
+    function changeListNum(dataList){ // 更改list數字
+        listNum.innerHTML = dataList.length;
+    }
+    // 畫面渲染-----------------
+    function render (dataList){
+        var str = " ";
+        dataList.forEach( function (item, i){  //參考解答
+            // str += `<li>
+            // <input type="checkbox"> ${item.title} <button id="${item.id}"> 刪除此項 </button>
+            // </li>`
+            str += `<li class="list-group-item">
+<div class="d-flex">
+<div class="form-check" data-action="complete" data-id="${item.id}">
+<input type="checkbox" class="form-check-input" ${item.completed ? 'checked' : ''}>
+<label class="form-check-label ${item.completed ? 'completed' : ''}"> ${item.title}</label>
+</div>
+<button type="button" class="close ml-auto remove" aria-label="Close" data-action="remove" data-id="${item.id}">
+<span aria-hidden="true">&times;</span>
+</button>
+</div>
+</li>`;
+        })
+        changeListNum(dataList);
+        todoListArea.innerHTML = str;
+        console.log('渲染成功',todoListArea);
+    }
+</script>
